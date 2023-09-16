@@ -1,3 +1,4 @@
+using Photon.Pun;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,8 +9,17 @@ public class PlayerInput : MonoBehaviour
     public Action<float> OnMove;
     public Action OnAttack;
 
+    private Player _currentPalyer;
+
+    private void Awake()
+    {
+        _currentPalyer = GetComponent<Player>();
+    }
+
     private void Update()
     {
+        if (_currentPalyer == null) return;
+     
         InputMove();
         InputAttack();
     }
@@ -21,9 +31,11 @@ public class PlayerInput : MonoBehaviour
 
     private void InputAttack()
     {
+        if (_currentPalyer.CurrentPhotonView.IsMine == false) return;
         if (Input.GetKey(KeyCode.Space))
         {
             OnAttack?.Invoke();
         }
     }
+
 }

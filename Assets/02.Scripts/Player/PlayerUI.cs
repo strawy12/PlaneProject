@@ -30,7 +30,7 @@ public class PlayerUI : MonoBehaviour
 
     private void Start()
     {
-        SetNameText(PhotonNetwork.NickName);
+        SetNameText(PhotonNetwork.IsMasterClient == _currentPalyer.CurrentPhotonView.IsMine ? "Player_1" : "Player_2");
 
         if (!_currentPalyer.CurrentPhotonView.IsMine)
         {

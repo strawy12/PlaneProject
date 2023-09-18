@@ -32,7 +32,7 @@ public class PlayerInput : MonoBehaviour
     private void InputAttack()
     {
         if (_currentPalyer.CurrentPhotonView.IsMine == false) return;
-        if (Input.GetKey(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.Space))
         {
             OnAttack?.Invoke();
         }

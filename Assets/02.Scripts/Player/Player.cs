@@ -86,6 +86,7 @@ public class Player : MonoBehaviour, IPunObservable, IHitable
 
             if (CurrentPhotonView.IsMine)
             {
+                SoundManager.Inst.PlaySound(ESoundType.ArmorHit);
                 GameManager.Inst.ShakeCamera(0.3f, 0.1f, 20);
             }
             return;
@@ -99,6 +100,7 @@ public class Player : MonoBehaviour, IPunObservable, IHitable
         {
             GameManager.Inst.ShakeCamera(0.5f, 0.3f, 30);
             UIManager.Inst.StartHitEffect();
+            SoundManager.Inst.PlaySound(ESoundType.HitMe);
         }
 
         if (_health <= 0)
@@ -146,6 +148,7 @@ public class Player : MonoBehaviour, IPunObservable, IHitable
 
     public void OnHit(int damage)
     {
+        SoundManager.Inst.PlaySound(ESoundType.HitPlayer);
         _photonView.RPC("ToAttack", RpcTarget.All, damage);
     }
 

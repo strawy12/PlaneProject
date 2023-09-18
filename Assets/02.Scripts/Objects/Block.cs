@@ -104,7 +104,7 @@ public class Block : MonoBehaviour, IHitable
     public void OnHit(int damage)
     {
         if (_currentHp <= 0) return;
-
+        SoundManager.Inst.PlaySound(ESoundType.BlockHit);
         CurrentPhotonView.RPC("Hit_RPC", RpcTarget.All);
     }
 
@@ -123,6 +123,7 @@ public class Block : MonoBehaviour, IHitable
 
     private void DestroyBlock()
     {
+        SoundManager.Inst.PlaySound(ESoundType.BlockDestroy);
         OnDestroy?.Invoke(this);
         Hide();
     }

@@ -17,6 +17,5 @@ public enum EGameEvent
     MakeBlock,
     AttackedPlayer,
     RoundWin,
-    ParringFailed
 }
 

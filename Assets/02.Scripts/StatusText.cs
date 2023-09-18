@@ -27,7 +27,13 @@ public class StatusText : MonoBehaviourPunCallbacks
     public override void OnJoinedRoom()
     {
         _currentText.text = "Joined Room";
+
+        if (PhotonNetwork.PlayerList.Length >= 2)
+        {
+            _currentText.text = "Joined Room\nIt'll start soon";
+        }
     }
+
 
     public override void OnPlayerEnteredRoom(Photon.Realtime.Player newPlayer)
     {

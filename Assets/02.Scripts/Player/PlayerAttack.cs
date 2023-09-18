@@ -29,6 +29,7 @@ public class PlayerAttack : MonoBehaviour
 
         Projectile projectile = PhotonNetwork.Instantiate(Define.PROJECTILE, _firePos.position, transform.rotation).GetComponent<Projectile>();
         projectile.CurrentPhotonView.RPC("Fire", RpcTarget.All, _attackDamage, _projectileSpeed);
+        SoundManager.Inst.PlaySound(ESoundType.Shot);
         StartCoroutine(AttackDelay());
     }
 

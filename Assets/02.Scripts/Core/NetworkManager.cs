@@ -30,7 +30,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     private void Awake()
     {
-       if(FindObjectsOfType<NetworkManager>().Length > 1)
+        if (FindObjectsOfType<NetworkManager>().Length > 1)
         {
             Destroy(gameObject);
         }
@@ -41,15 +41,14 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     }
 
     private void Start()
-    { 
+    {
         Connect();
     }
 
     public void Connect()
     {
-        Debug.Log(PhotonNetwork.ConnectUsingSettings());
         EventManager.TriggerEvent(ENetworkEvent.Connecting);
-;        PhotonNetwork.ConnectUsingSettings();
+        ; PhotonNetwork.ConnectUsingSettings();
     }
 
     public override void OnConnectedToMaster()
@@ -93,7 +92,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     public void LeaveRoom()
     {
-        if(SceneManager.GetActiveScene().name != Define.LOBBY_SCENE)
+        if (SceneManager.GetActiveScene().name != Define.LOBBY_SCENE)
         {
             PhotonNetwork.AutomaticallySyncScene = false;
             SceneManager.LoadScene(Define.LOBBY_SCENE);
@@ -105,7 +104,6 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     public override void OnJoinedRoom()
     {
         PhotonNetwork.AutomaticallySyncScene = true;
-        Rename();
         EventManager.TriggerEvent(ENetworkEvent.JoinedRoom);
     }
 
@@ -122,24 +120,6 @@ public class NetworkManager : MonoBehaviourPunCallbacks
             PhotonNetwork.CurrentRoom.IsOpen = false;
             StopAllCoroutines();
             StartCoroutine(Startgame());
-        }
-    }
-
-    private void Rename()
-    {
-        if (PhotonNetwork.PlayerListOthers.Length != 0)
-        {
-            while (PhotonNetwork.PlayerListOthers[0].NickName == PhotonNetwork.LocalPlayer.NickName)
-            {
-                PhotonNetwork.LocalPlayer.NickName = $"player{_nicknameIndex.ToString()}";
-                _nicknameIndex++;
-            }
-        }
-
-        else
-        {
-            PhotonNetwork.LocalPlayer.NickName = $"player{_nicknameIndex.ToString()}";
-            _nicknameIndex++;
         }
     }
 

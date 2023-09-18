@@ -55,6 +55,8 @@ public class GameManager : MonoSingleton<GameManager>
         }
 
         UIManager.Inst.Init();
+
+        SoundManager.Inst.PlaySound(ESoundType.MainBGM);
     }
 
     private void OnDestroy()

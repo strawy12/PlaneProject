@@ -97,6 +97,7 @@ public class Item : MonoBehaviour, IHitable
     public void OnHit(int damage)
     {
         CurrentPhotonView.RPC("UseItem", RpcTarget.All, PhotonNetwork.IsMasterClient);
+        SoundManager.Inst.PlaySound(ESoundType.GetItem);
     }
 
     [PunRPC]

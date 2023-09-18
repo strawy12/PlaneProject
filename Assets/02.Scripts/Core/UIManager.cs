@@ -39,7 +39,7 @@ public class UIManager : MonoSingleton<UIManager>
     private Image _hitEffect;
 
     [SerializeField]
-    private Button _goLobbyBtn;
+    private Button _gameCloseBtn;
 
     private Color _defaultColor = new Color(0, 0, 0, 0.4f);
     private Color _otherColor = new Color(0, 1, 0, 0.7f);
@@ -48,8 +48,14 @@ public class UIManager : MonoSingleton<UIManager>
     private Action<object[]> OnMakeBlock;
     private Action<object[]> OnStartRound;
     private Action<object[]> OnRoundWin;
+
+    private PhotonView _photonView;
+    public PhotonView CurrentPhotonView => _photonView;
+
     private void Awake()
     {
+        _photonView = GetComponent<PhotonView>();
+
         OnMakeBlock += (a) => StopAllCoroutines();
         OnMakeBlock += (a) => StartCoroutine(SetBlockSpawnTimeTextCo());
 
@@ -58,7 +64,7 @@ public class UIManager : MonoSingleton<UIManager>
         OnRoundWin += SetRoundWinUI;
         OnRoundWin += (a) => StartCoroutine(RoundEndCo(a));
 
-        _goLobbyBtn.onClick.AddListener(() => NetworkManager.Inst.LeaveRoom());
+        _gameCloseBtn.onClick.AddListener(() => Application.Quit());
 
         EventManager.StartListening(EGameEvent.StartRound, OnStartRound);
         EventManager.StartListening(EGameEvent.MakeBlock, OnMakeBlock);
@@ -86,6 +92,12 @@ public class UIManager : MonoSingleton<UIManager>
         _roundText.text = $"{nowRound.ToString()}<size=44>R</size>";
     }
 
+    [PunRPC]
+
+    public void MakeBlock()
+    {
+        StartCoroutine(SetBlockSpawnTimeTextCo());
+    }
     private void SetBlockSpawnTimeText(float time)
     {
         int minute = (int)(time / 60f);
@@ -208,7 +220,7 @@ public class UIManager : MonoSingleton<UIManager>
         if(winCnt >= 2)
         {
             NetworkManager.Inst.dontLeaveRoom = true;
-            _goLobbyBtn.gameObject.SetActive(true);
+            _gameCloseBtn.gameObject.SetActive(true);
             yield break;
         }
         yield return new WaitForSecondsRealtime(text.Length * 0.03f + 1f);

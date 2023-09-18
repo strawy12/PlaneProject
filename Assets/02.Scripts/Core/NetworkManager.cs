@@ -24,10 +24,6 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         }
     }
 
-    [SerializeField]
-    private GameObject _lodingPanel;
-
-
     private int _nicknameIndex = 0;
 
     public bool dontLeaveRoom = false;
@@ -58,14 +54,11 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     public override void OnConnectedToMaster()
     {
-        //EventManager.TriggerEvent(ENetworkEvent.Connected);
-        Debug.Log("dd");
         PhotonNetwork.JoinLobby();
     }
 
     public override void OnJoinedLobby()
     {
-        Debug.Log("ddd");
         EventManager.TriggerEvent(ENetworkEvent.JoinedLobby);
     }
 
@@ -173,6 +166,5 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         float time = 30f;
         yield return new WaitForSeconds(time);
         LeaveRoom();
-        Debug.Log("다시 스타트 누르세요");
     }
 }

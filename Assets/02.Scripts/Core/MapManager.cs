@@ -48,7 +48,7 @@ public class MapManager : MonoSingleton<MapManager>
     {
         while (true)
         {
-            EventManager.TriggerEvent(EGameEvent.MakeBlock);
+            UIManager.Inst.CurrentPhotonView.RPC("MakeBlock", RpcTarget.All);
 
             List<Block> list = new List<Block>();
             for (int i = 0; i < 10; i++)

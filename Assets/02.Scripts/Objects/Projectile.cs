@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 public class Projectile : MonoBehaviour
 {
@@ -15,6 +16,12 @@ public class Projectile : MonoBehaviour
 
     [SerializeField]
     private SpriteRenderer _spriteRenderer;
+
+    [SerializeField]
+    private Light2D _light;
+
+    [SerializeField]
+    private List<Color> _lightColorList;
 
     private PhotonView _photonView;
     public PhotonView CurrentPhotonView
@@ -66,6 +73,7 @@ public class Projectile : MonoBehaviour
             hit.OnHit((int)_attackDamage);
             PhotonNetwork.Destroy(gameObject);
         }
+
     }
     private void SpawnExplosionEffect()
     {
@@ -83,9 +91,19 @@ public class Projectile : MonoBehaviour
     [PunRPC]
     public void Fire(float attackDamage, float moveSpeed)
     {
-        int idx = Define.CheckMasterAndMine(CurrentPhotonView) ? 3 : 2;
-        _spriteRenderer.sprite = Resources.LoadAll<Sprite>($"Characters-export")[idx];
+        int idx;
+        if (Define.CheckMasterAndMine(CurrentPhotonView))
+        {
+            idx = 3;
+            _light.color = _lightColorList[0];
+        }
 
+        else
+        {
+            idx = 2;
+            _light.color = _lightColorList[1];
+        }
+        _spriteRenderer.sprite = Resources.LoadAll<Sprite>($"Characters-export")[idx];
         _attackDamage = attackDamage;
         _moveSpeed = moveSpeed;
         isFire = true;

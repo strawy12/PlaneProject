@@ -28,7 +28,6 @@ public class Player : MonoBehaviour, IPunObservable, IHitable
     [SerializeField]
     private PlayerUI _playerUI;
 
-
     private PhotonView _photonView;
     private SpriteRenderer _spriteRenderer;
 
@@ -39,17 +38,11 @@ public class Player : MonoBehaviour, IPunObservable, IHitable
     private int _health;
     private int _armorAmount;
 
+
     private void Awake()
     {
         _photonView = GetComponent<PhotonView>();
         _spriteRenderer = transform.Find("VisualSprite").GetComponent<SpriteRenderer>();
-
-        PlayerAttack attack = GetComponent<PlayerAttack>();
-        attack.SetAttackDamage(_playerData.attackDamage);
-        attack.SetProjectileSpeed(_playerData.projectileSpeed);
-        attack.SetAttackDelay(_playerData.attackDelay);
-
-        GetComponent<PlayerMove>().SetMoveSpeed(_playerData.moveSpeed);
 
         EventManager.StartListening(EGameEvent.UseItem, Useitem);
         EventManager.StartListening(EGameEvent.StartRound, Init);
@@ -57,6 +50,13 @@ public class Player : MonoBehaviour, IPunObservable, IHitable
 
     private void Start()
     {
+        PlayerAttack attack = GetComponent<PlayerAttack>();
+        attack.SetAttackDamage(_playerData.attackDamage);
+        attack.SetProjectileSpeed(_playerData.projectileSpeed);
+        attack.SetAttackDelay(_playerData.attackDelay);
+
+        GetComponent<PlayerMove>().SetMoveSpeed(_playerData.moveSpeed);
+
         int idx = Define.CheckMasterAndMine(CurrentPhotonView) ? 0 : 1;
         _spriteRenderer.sprite = Resources.LoadAll<Sprite>($"Characters-export")[idx];
     }
@@ -166,6 +166,7 @@ public class Player : MonoBehaviour, IPunObservable, IHitable
                 _health++;
                 _health = Mathf.Clamp(_health, 0, _playerData.maxHp);
                 OnChangeHp?.Invoke(_health, _playerData.maxHp, _armorAmount);
+                EventManager.TriggerEvent(EGameEvent.AttackedPlayer, new object[] { _health, _playerData.maxHp, CurrentPhotonView.IsMine });
                 break;
 
             case Item.EItemType.ArmorKit:

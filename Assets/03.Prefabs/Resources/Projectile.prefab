@@ -48,7 +48,7 @@ MonoBehaviour:
   m_LightType: 3
   m_BlendStyleIndex: 0
   m_FalloffIntensity: 0.5
-  m_Color: {r: 0.96470594, g: 0.5254902, b: 0.17254902, a: 1}
+  m_Color: {r: 0.17254902, g: 0.9647059, b: 0.3348552, a: 1}
   m_Intensity: 1
   m_LightVolumeIntensity: 1
   m_LightVolumeIntensityEnabled: 0
@@ -296,6 +296,10 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   _spriteRenderer: {fileID: 8580357775680898721}
+  _light: {fileID: 2330217599385786153}
+  _lightColorList:
+  - {r: 0.9647059, g: 0.5254902, b: 0.17254902, a: 1}
+  - {r: 0.17254902, g: 0.9647059, b: 0.33333334, a: 1}
 --- !u!50 &8580357776560259275
 Rigidbody2D:
   serializedVersion: 4

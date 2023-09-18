@@ -9,6 +9,9 @@ public class PlayerMove : MonoBehaviour, IPunObservable
     private Player _currentPlayer;
 
     private Vector3 _currentPos;
+    private bool _dontMove = false;
+    [SerializeField]
+    private float _dontMoveDelayTime = 2f;
 
     private void Start()
     {
@@ -23,10 +26,13 @@ public class PlayerMove : MonoBehaviour, IPunObservable
         {
             GetComponent<PlayerInput>().OnMove += (a) => SyncCurrentPos();
         }
+
+        EventManager.StartListening(EGameEvent.ParringFailed, DontMove);
     }
 
     public void OnMove(float horizontal)
     {
+        if (_dontMove) return;
         transform.Translate(Vector3.right * horizontal * _moveSpeed * Time.deltaTime);
 
         Vector3 pos = transform.position;
@@ -34,6 +40,18 @@ public class PlayerMove : MonoBehaviour, IPunObservable
 
         transform.position = pos;
 
+    }
+
+    private void DontMove(object[] ps)
+    {
+        _dontMove = true;
+        StartCoroutine(DontMoveDelay());     
+    }
+
+    public IEnumerator DontMoveDelay()
+    {
+        yield return new WaitForSeconds(_dontMoveDelayTime);
+        _dontMove = false;
     }
 
     private void SyncCurrentPos()

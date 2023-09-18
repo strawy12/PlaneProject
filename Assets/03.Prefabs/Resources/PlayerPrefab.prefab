@@ -269,7 +269,7 @@ GameObject:
   - component: {fileID: 6907670559147886141}
   m_Layer: 0
   m_Name: PlayerPrefab
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -334,6 +334,9 @@ MonoBehaviour:
     attackDelay: 0.1
     projectileSpeed: 10
     maxHp: 3
+    invincibleTime: 3
+  _collider: {fileID: 6907670559147886141}
+  _playerUI: {fileID: 1979657889641211971}
 --- !u!114 &4533023731467426880
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -37,7 +37,6 @@ public class PlayerUI : MonoBehaviour
             _root.transform.localRotation = Quaternion.Euler(0f, 0f, 180f);
         }
     }
-
     public void Show()
     {
         if (isShow)
@@ -49,6 +48,7 @@ public class PlayerUI : MonoBehaviour
         isShow = true;
         _root.DOKill();
         _root.DOFade(1f, 1f);
+        StartCoroutine(HideDelay());
     }
 
     private IEnumerator HideDelay()

@@ -30,15 +30,22 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     private int _nicknameIndex = 0;
 
+    public bool dontLeaveRoom = false;
+
     private void Awake()
     {
+       if(FindObjectsOfType<NetworkManager>().Length > 1)
+        {
+            Destroy(gameObject);
+        }
+
         DontDestroyOnLoad(this);
         PhotonNetwork.SendRate = 60;
         PhotonNetwork.SerializationRate = 30;
     }
 
     private void Start()
-    {
+    { 
         Connect();
     }
 
@@ -82,8 +89,6 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     }
     public void CreateRoom()
     {
-        Debug.Log("Create");
-
         EventManager.TriggerEvent(ENetworkEvent.CreateRoom);
         PhotonNetwork.CreateRoom(null, new RoomOptions { MaxPlayers = 2 });
     }
@@ -95,25 +100,30 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     public void LeaveRoom()
     {
-        Debug.Log("LeaveRoom");
+        if(SceneManager.GetActiveScene().name != Define.LOBBY_SCENE)
+        {
+            PhotonNetwork.AutomaticallySyncScene = false;
+            SceneManager.LoadScene(Define.LOBBY_SCENE);
+        }
+
         PhotonNetwork.LeaveRoom();
     }
 
     public override void OnJoinedRoom()
     {
-        Debug.Log("JoinedRoom");
         PhotonNetwork.AutomaticallySyncScene = true;
         Rename();
         EventManager.TriggerEvent(ENetworkEvent.JoinedRoom);
     }
+
     public override void OnPlayerLeftRoom(Photon.Realtime.Player newPlayer)
     {
+        if (dontLeaveRoom) return;
         LeaveRoom();
     }
 
     public override void OnPlayerEnteredRoom(Photon.Realtime.Player newPlayer)
     {
-        Debug.Log("OnPlayerEnteredRoom");
         if (PhotonNetwork.PlayerList.Length == 2)
         {
             PhotonNetwork.CurrentRoom.IsOpen = false;
@@ -160,7 +170,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     private IEnumerator CrossCheckRoom()
     {
-        float time = Random.Range(5f, 10f);
+        float time = 30f;
         yield return new WaitForSeconds(time);
         LeaveRoom();
         Debug.Log("다시 스타트 누르세요");

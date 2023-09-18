@@ -18,6 +18,9 @@ public class Item : MonoBehaviour, IHitable
     [SerializeField]
     private EItemType _itemType;
 
+    [SerializeField]
+    private Collider2D _collider;
+
     [Header("SpawnEffect")]
     [SerializeField]
     private float _duration = 1f;
@@ -62,8 +65,8 @@ public class Item : MonoBehaviour, IHitable
         Vector2 newPos = transform.position;
         newPos.x = currentIdx.x * 1.25f;
         newPos.y = currentIdx.y * 1.25f;
-        newPos.x += -6.875f;
-        newPos.y += -1.875f;
+        newPos.x += -4.375f;
+        newPos.y += -5.625f;
 
         transform.position = newPos;
 
@@ -93,19 +96,23 @@ public class Item : MonoBehaviour, IHitable
 
     public void OnHit(int damage)
     {
-        CurrentPhotonView.RPC("UseItem", RpcTarget.All);
-        DestroyItem();
+        CurrentPhotonView.RPC("UseItem", RpcTarget.All, PhotonNetwork.IsMasterClient);
     }
 
     [PunRPC]
-    private void UseItem()
+    private void UseItem(bool isMaster)
     {
-        EventManager.TriggerEvent(EGameEvent.UseItem, new object[] { _itemType, CurrentPhotonView.IsMine });
+        _collider.enabled = false;
+        EventManager.TriggerEvent(EGameEvent.UseItem, new object[] { _itemType, isMaster });
+        DestroyItem();
     }
 
     public void Hide()
     {
-        PhotonNetwork.Destroy(gameObject);
+        if (PhotonNetwork.IsMasterClient)
+        {
+            PhotonNetwork.Destroy(CurrentPhotonView);
+        }
     }
     protected void DestroyItem()
     {

@@ -13,5 +13,9 @@ public enum EGameEvent
     LoadedGameScene = 0,
     Explosion,
     UseItem,
+    StartRound,
+    MakeBlock,
+    AttackedPlayer,
+    RoundWin,
 }
 

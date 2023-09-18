@@ -12,6 +12,9 @@ public class Block : MonoBehaviour, IHitable
     [SerializeField]
     private TMP_Text _lifeText;
 
+    [SerializeField]
+    private Collider2D _collider;
+
     public Vector2Int currentIdx { get; private set; }
     public Action<Block> OnDestroy;
 
@@ -47,8 +50,8 @@ public class Block : MonoBehaviour, IHitable
         Vector2 newPos = transform.position;
         newPos.x = currentIdx.x * 1.25f;
         newPos.y = currentIdx.y * 1.25f;
-        newPos.x += -6.875f;
-        newPos.y += -1.875f;
+        newPos.x += -4.375f;
+        newPos.y += -5.625f;
 
         transform.position = newPos;
 
@@ -112,6 +115,7 @@ public class Block : MonoBehaviour, IHitable
         SetLifeText();
         if (_currentHp <= 0)
         {
+            _collider.enabled = false;
             _isDestroyed = true;
             DestroyBlock();
         }

@@ -13,26 +13,61 @@ public class GameManager : MonoSingleton<GameManager>
     {
         Game,
         EndGame,
-        ChangeMap,
-    }   
-    
+        ChangeRound,
+    }
+
+    public EGameState gameState;
+
     [SerializeField]
     private List<Transform> playerSpawnPosList;
 
     [SerializeField]
     private List<Camera> playerCameraList;
+    [SerializeField]
+    private Canvas _uiCanvas;
 
-    private Camera _mainCam;
+    public Camera mainCam { get; private set; }
+    private PhotonView _photonView;
+    public PhotonView CurrentPhotonView => _photonView;
 
-    private int currentLife = 3;
-    private int otherLife = 3;
-    void Start()
+    private int _nowRound = 0;
+
+    private int _currentWinCnt = 0;
+    private int _otherWinCnt = 0;
+
+    public int CurrentWinCnt => _currentWinCnt;
+    public int OtherWinCnt => _otherWinCnt;
+
+    private void Awake()
     {
-        currentLife = 3;
-        SetCamera();
-        SpawnPlayer();
+        _photonView = GetComponent<PhotonView>();
+        SetCamera(); 
+    }
 
+    void Start()
+    { 
+        SpawnPlayer();
         EventManager.StartListening(EGameEvent.Explosion, Expolsion);
+
+        if (PhotonNetwork.IsMasterClient)
+        {
+            _photonView.RPC("StartRound", RpcTarget.All);
+        }
+
+        UIManager.Inst.Init();
+    }
+
+    private void OnDestroy()
+    {
+        EventManager.StopListening(EGameEvent.Explosion, Expolsion);
+    }
+
+    [PunRPC]
+    private void StartRound()
+    {
+        gameState = EGameState.Game;
+        _nowRound++;
+        EventManager.TriggerEvent(EGameEvent.StartRound, new object[] { _nowRound });
     }
 
     private void SpawnPlayer()
@@ -47,29 +82,40 @@ public class GameManager : MonoSingleton<GameManager>
         playerCameraList[0].enabled = PhotonNetwork.IsMasterClient;
         playerCameraList[1].enabled = !PhotonNetwork.IsMasterClient;
 
-        _mainCam = playerCameraList[PhotonNetwork.IsMasterClient? 0 : 1];
+        mainCam = playerCameraList[PhotonNetwork.IsMasterClient ? 0 : 1];
+        _uiCanvas.worldCamera = mainCam;
     }
 
-    public void SetMyLife(int value)
-    {
-        currentLife += value;
-    }
-
-    public void SetOtherLife(int value)
-    {
-        otherLife += value;
-    }
-    
     private void Expolsion(object[] ps)
     {
         ShakeCamera(0.3f, 0.1f, 20);
     }
 
 
-    public void ShakeCamera(float duration, float strength ,int vibrato)
+    public void ShakeCamera(float duration, float strength, int vibrato)
     {
         Camera.main.DOKill(true);
         Camera.main.DOShakePosition(duration, strength, vibrato);
     }
 
+    [PunRPC]
+    public void RoundWin(bool isMaster)
+    {
+        int winCnt = 0;
+        if(isMaster == PhotonNetwork.IsMasterClient)
+        {
+            _currentWinCnt++;
+            winCnt = _currentWinCnt;
+        }
+
+        else
+        {
+            _otherWinCnt++;
+            winCnt = _otherWinCnt;
+        }
+
+        gameState = EGameState.ChangeRound;
+        Time.timeScale = 0.2f;
+        EventManager.TriggerEvent(EGameEvent.RoundWin, new object[] { winCnt, isMaster });
+    }
 }

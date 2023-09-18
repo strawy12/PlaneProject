@@ -1,34 +1,60 @@
+using DG.Tweening;
 using Photon.Pun;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using UnityEngine;
 
 public class MapManager : MonoSingleton<MapManager>
 {
-    private GameObject[,] _mapGrid = new GameObject[12,4];
+    private GameObject[,] _mapGrid = new GameObject[8,8];
     [SerializeField]
     private List<Block> _mapObjectList;
 
     [SerializeField]
     private List<Item> _itemObjectList;
 
-    private void Start()
+    private void Awake()
     {
-        if(PhotonNetwork.IsMasterClient)
+        EventManager.StartListening(EGameEvent.StartRound, MakeMap);
+    }
+
+
+    public void MakeMap(object[] ps)
+    {
+        if (PhotonNetwork.IsMasterClient == false) return;
+        ResetMap();
+        StartCoroutine(MakeMapCo());
+    }
+
+    private void ResetMap()
+    {
+        StopAllCoroutines();
+        for(int x = 0; x < 8; x++)
         {
-            StartCoroutine(MakeMap());
+            for(int  y = 0; y < 8; y++)
+            {
+                if(_mapGrid[x, y] != null)
+                {
+                    _mapGrid[x, y].transform.DOKill();
+                    PhotonNetwork.Destroy(_mapGrid[x, y]);
+                    _mapGrid[x, y] = null;
+                }
+            }
         }
     }
 
-    private IEnumerator MakeMap()
+    private IEnumerator MakeMapCo()
     {
         while (true)
         {
+            EventManager.TriggerEvent(EGameEvent.MakeBlock);
+
             List<Block> list = new List<Block>();
             for (int i = 0; i < 10; i++)
             {
-                int x = Random.Range(0, 12);
-                int y = Random.Range(0, 4);
+                int x = Random.Range(0, 8);
+                int y = Random.Range(0, 8);
 
                 int idx = Random.Range(0, 3);
 
@@ -49,7 +75,7 @@ public class MapManager : MonoSingleton<MapManager>
             }
 
             list.ForEach(x => x.CurrentPhotonView.RPC("Show", RpcTarget.All));
-            yield return new WaitForSeconds(10f);
+            yield return new WaitForSeconds(Define.BLOCK_SPAWN_DELAY);
             list.ForEach(x => 
             {
                 Vector2Int idx = x.currentIdx;
@@ -64,7 +90,7 @@ public class MapManager : MonoSingleton<MapManager>
         if (_mapGrid[x, y] != null)
             return;
 
-        int idx = Random.Range(0, 3);
+        int idx = Random.Range(0, 2);
         Item item = NetworkManager.Inst.SpawnObject(_itemObjectList[idx], transform);
         _mapGrid[x, y] = item.gameObject;
         item.CurrentPhotonView.RPC("SpawnItem", RpcTarget.All, x, y);

@@ -51,6 +51,8 @@ MonoBehaviour:
   - DestroyBlock
   - SpawnItem
   - UseItem
+  - RoundWin
+  - StartRound
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions.Must;
+using UnityEngine.Rendering;
 
 [Serializable]
 public class PlayerData
@@ -13,12 +14,20 @@ public class PlayerData
     public float attackDelay;
     public float projectileSpeed;
     public int maxHp;
+    public float invincibleTime;
 }
 
 public class Player : MonoBehaviour, IPunObservable, IHitable
 {
     [SerializeField]
     private PlayerData _playerData;
+
+    [SerializeField]
+    private Collider2D _collider;
+
+    [SerializeField]
+    private PlayerUI _playerUI;
+
 
     private PhotonView _photonView;
     private SpriteRenderer _spriteRenderer;
@@ -32,8 +41,6 @@ public class Player : MonoBehaviour, IPunObservable, IHitable
 
     private void Awake()
     {
-        _health = _playerData.maxHp;
-        _armorAmount = 0;
         _photonView = GetComponent<PhotonView>();
         _spriteRenderer = transform.Find("VisualSprite").GetComponent<SpriteRenderer>();
 
@@ -45,49 +52,83 @@ public class Player : MonoBehaviour, IPunObservable, IHitable
         GetComponent<PlayerMove>().SetMoveSpeed(_playerData.moveSpeed);
 
         EventManager.StartListening(EGameEvent.UseItem, Useitem);
+        EventManager.StartListening(EGameEvent.StartRound, Init);
     }
 
     private void Start()
     {
         int idx = Define.CheckMasterAndMine(CurrentPhotonView) ? 0 : 1;
         _spriteRenderer.sprite = Resources.LoadAll<Sprite>($"Characters-export")[idx];
+    }
+
+    private void OnDestroy()
+    {
+        EventManager.StopListening(EGameEvent.UseItem, Useitem);
+    }
+
+    public void Init(object[] ps)
+    {
+        _health = _playerData.maxHp;
+        _armorAmount = 0;
         OnChangeHp?.Invoke(_health, _playerData.maxHp, _armorAmount);
+        UIManager.Inst.SetPlayerLifeText(_health, _playerData.maxHp, CurrentPhotonView.IsMine);
     }
 
     [PunRPC]
     public void ToAttack(int damage)
     {
+        StartCoroutine(InvincibleDelay());
+
         if (_armorAmount > 0)
         {
             _armorAmount--;
             OnChangeHp?.Invoke(_health, _playerData.maxHp, _armorAmount);
-            if(CurrentPhotonView.IsMine)
+
+            if (CurrentPhotonView.IsMine)
+            {
                 GameManager.Inst.ShakeCamera(0.3f, 0.1f, 20);
+            }
             return;
         }
         _health -= damage;
         _health = Mathf.Clamp(_health, 0, _playerData.maxHp);
         OnChangeHp?.Invoke(_health, _playerData.maxHp, _armorAmount);
+        EventManager.TriggerEvent(EGameEvent.AttackedPlayer, new object[] { _health, _playerData.maxHp, CurrentPhotonView.IsMine });
 
         if (CurrentPhotonView.IsMine)
+        {
             GameManager.Inst.ShakeCamera(0.5f, 0.3f, 30);
+            UIManager.Inst.StartHitEffect();
+        }
 
         if (_health <= 0)
         {
-            if (_photonView.IsMine)
+            if (!_photonView.IsMine)
             {
-                _photonView.RPC("OtherPlayerDie", RpcTarget.Others);
-                GameManager.Inst.SetMyLife(-1);
+                GameManager.Inst.CurrentPhotonView.RPC("RoundWin", RpcTarget.All, PhotonNetwork.IsMasterClient);
             }
         }
     }
 
-
-
-    [PunRPC]
-    private void OtherPlayerDie()
+    public IEnumerator InvincibleDelay()
     {
-        GameManager.Inst.SetOtherLife(-1);
+        if (_playerData.invincibleTime == 0f)
+        {
+            _playerData.invincibleTime = 3f;
+        }
+        _collider.enabled = false;
+        float divideTime = _playerData.invincibleTime / 6f;
+
+        for (int i = 0; i < 3; i++)
+        {
+            _spriteRenderer.color = new Color(1, 1, 1, 0.3f);
+            yield return new WaitForSeconds(divideTime);
+            _spriteRenderer.color = new Color(1, 1, 1, 0.8f);
+            yield return new WaitForSeconds(divideTime);
+        }
+
+        _spriteRenderer.color = new Color(1, 1, 1, 1f);
+        _collider.enabled = true;
     }
 
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
@@ -114,11 +155,10 @@ public class Player : MonoBehaviour, IPunObservable, IHitable
             return;
 
         Item.EItemType type = (Item.EItemType)ps[0];
-        bool isMine = (bool)ps[1];
+        bool isMaster = (bool)ps[1];
 
-        if (isMine != CurrentPhotonView.IsMine)
+        if ((isMaster == PhotonNetwork.IsMasterClient) != CurrentPhotonView.IsMine)
             return;
-
 
         switch (type)
         {

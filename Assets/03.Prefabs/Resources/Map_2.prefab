@@ -252,7 +252,7 @@ GameObject:
   - component: {fileID: 2846757540942849844}
   m_Layer: 7
   m_Name: Map_2
-  m_TagString: Untagged
+  m_TagString: Block
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -338,6 +338,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _lifeText: {fileID: 1532439957}
+  _collider: {fileID: 364613428}
 --- !u!61 &364613428
 BoxCollider2D:
   m_ObjectHideFlags: 0

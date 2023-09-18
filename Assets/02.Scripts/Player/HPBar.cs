@@ -9,12 +9,12 @@ public class HPBar : MonoBehaviour
     private Image _guageTemp;
     private List<Image> _gaugeImageList = new List<Image>();
 
-    private bool _isInit = false;
+    private bool isInit = false;
 
     public void Init(int maxHp)
     {
-        if (_isInit) return;
-        _isInit = true;
+        if (isInit) return;
+        isInit = true;
 
         for (int i = 0; i < maxHp; i++)
         {
@@ -28,7 +28,7 @@ public class HPBar : MonoBehaviour
     {
         for (int i = 0; i < _gaugeImageList.Count; i++)
         {
-            _gaugeImageList[i].gameObject.SetActive(i < hp);
+            _gaugeImageList[i].color = (i < hp) ? new Color(1,0,0,1) : new Color(1, 0, 0, 0);
             _gaugeImageList[i].transform.GetChild(0).gameObject.SetActive(i < armor);
         }
     }

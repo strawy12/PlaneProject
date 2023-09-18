@@ -50,7 +50,9 @@ public class Projectile : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        if (GameManager.Inst.gameState == GameManager.EGameState.ChangeRound) return;
         if (CurrentPhotonView.IsMine == false) return;
+
         IHitable hit = collision.GetComponent<IHitable>();
         if (hit != null)
         {
@@ -59,10 +61,8 @@ public class Projectile : MonoBehaviour
                 if ((hit as Player).CurrentPhotonView.IsMine)
                     return;
             }
-            else
-            {
-                SpawnExplosionEffect();
-            }
+
+            SpawnExplosionEffect();
             hit.OnHit((int)_attackDamage);
             PhotonNetwork.Destroy(gameObject);
         }
@@ -83,7 +83,7 @@ public class Projectile : MonoBehaviour
     [PunRPC]
     public void Fire(float attackDamage, float moveSpeed)
     {
-        int idx = Define.CheckMasterAndMine(CurrentPhotonView) ? 2 : 3;
+        int idx = Define.CheckMasterAndMine(CurrentPhotonView) ? 3 : 2;
         _spriteRenderer.sprite = Resources.LoadAll<Sprite>($"Characters-export")[idx];
 
         _attackDamage = attackDamage;
